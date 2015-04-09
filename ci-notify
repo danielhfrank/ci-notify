@@ -1,0 +1,15 @@
+#!/usr/bin/env ruby
+
+PENDING=2
+return_txt = ""
+
+loop do
+  return_txt = `hub ci-status -v`
+  break if $? != PENDING
+  sleep(1)
+end
+
+status_txt, url = return_txt.split(':', 2).map{|s| s.strip}
+url_args = status_txt == 'success' ? '' : "-open #{url}"
+
+exec("terminal-notifier -message 'Build #{status_txt}' -title 'ci-notify' #{url_args}") 
