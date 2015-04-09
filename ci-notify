@@ -1,11 +1,12 @@
 #!/usr/bin/env ruby
 
 PENDING=2
+NO_STATUS=3
 return_txt = ""
 
 loop do
   return_txt = `hub ci-status -v`
-  break if $?.exitstatus != PENDING
+  break unless [PENDING, NO_STATUS].include?($?.exitstatus)
   sleep(1)
 end
 
