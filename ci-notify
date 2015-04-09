@@ -5,7 +5,7 @@ return_txt = ""
 
 loop do
   return_txt = `hub ci-status -v`
-  break if $? != PENDING
+  break if $?.exitstatus != PENDING
   sleep(1)
 end
 
