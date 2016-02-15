@@ -13,4 +13,6 @@ end
 status_txt, url = return_txt.split(':', 2).map{|s| s.strip}
 url_args = status_txt == 'success' ? '' : "-open #{url}"
 
-exec("terminal-notifier -message 'Build #{status_txt}' -title 'ci-notify' #{url_args}") 
+project_name = `basename $(git rev-parse --show-toplevel)`
+
+exec("terminal-notifier -message 'Build #{status_txt}' -title '#{project_name}' #{url_args}") 
