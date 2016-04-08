@@ -2,7 +2,11 @@
 
 PENDING=2
 NO_STATUS=3
+GITHUB_SUCCESS="✔︎"
+GITHUB_FALURE="✖︎"
 return_txt = ""
+
+project_name = `basename $(git rev-parse --show-toplevel)`
 
 loop do
   return_txt = `hub ci-status -v`
@@ -10,9 +14,18 @@ loop do
   sleep(1)
 end
 
-status_txt, url = return_txt.split(':', 2).map{|s| s.strip}
-url_args = status_txt == 'success' ? '' : "-open #{url}"
+def notify(status_txt, title, url_args)
+    system("terminal-notifier -message 'Build #{status_txt}' -title '#{title}' #{url_args}")
+end
 
-project_name = `basename $(git rev-parse --show-toplevel)`
+status_rows = return_txt.split("\n").map{ |l| l.split("\t", 3).map{ |s| s.strip} }
+rows_by_status = status_rows.group_by{ |l| l[0] }
 
-exec("terminal-notifier -message 'Build #{status_txt}' -title '#{project_name}' #{url_args}") 
+if rows_by_status[GITHUB_FALURE].nil?
+    # success
+    notify(GITHUB_SUCCESS, project_name, '')
+else
+    rows_by_status[GITHUB_FALURE].each do |fail,test_name,test_url|
+        notify(GITHUB_FALURE, test_name, "-open #{test_url}")
+    end
+end
