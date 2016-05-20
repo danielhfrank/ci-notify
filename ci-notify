@@ -8,6 +8,8 @@ return_txt = ""
 
 project_name = `basename $(git rev-parse --show-toplevel)`
 
+test_name_regex = ARGV[0] || ".*"
+
 loop do
   return_txt = `hub ci-status -v`
   break unless [PENDING, NO_STATUS].include?($?.exitstatus)
@@ -19,7 +21,7 @@ def notify(status_txt, title, url_args)
 end
 
 status_rows = return_txt.split("\n").map{ |l| l.split("\t", 3).map{ |s| s.strip} }
-rows_by_status = status_rows.group_by{ |l| l[0] }
+rows_by_status = status_rows.select{ |l| /#{test_name_regex}/.match(l[1]) }.group_by{ |l| l[0] }
 
 if rows_by_status[GITHUB_FALURE].nil?
     # success
