@@ -10,9 +10,16 @@ project_name = `basename $(git rev-parse --show-toplevel)`
 
 test_name_regex = ARGV[0] || ".*"
 
+def test_complete(parsed_line)
+  [GITHUB_SUCCESS, GITHUB_FALURE].include?(parsed_line[0])
+end
+
+status_rows = []
+
 loop do
   return_txt = `hub ci-status -v`
-  break unless [PENDING, NO_STATUS].include?($?.exitstatus)
+  status_rows = return_txt.split("\n").map{ |l| l.split("\t", 3).map{ |s| s.strip} }
+  break if status_rows.all?{|row| test_complete(row)}
   sleep(1)
 end
 
@@ -20,7 +27,7 @@ def notify(status_txt, title, url_args)
     system("terminal-notifier -message 'Build #{status_txt}' -title '#{title}' #{url_args}")
 end
 
-status_rows = return_txt.split("\n").map{ |l| l.split("\t", 3).map{ |s| s.strip} }
+
 rows_by_status = status_rows.select{ |l| /#{test_name_regex}/.match(l[1]) }.group_by{ |l| l[0] }
 
 if rows_by_status[GITHUB_FALURE].nil?
