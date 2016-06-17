@@ -19,7 +19,7 @@ status_rows = []
 loop do
   return_txt = `hub ci-status -v`
   status_rows = return_txt.split("\n").map{ |l| l.split("\t", 3).map{ |s| s.strip} }
-  break if status_rows.all?{|row| test_complete(row)}
+  break if status_rows.select{ |l| /#{test_name_regex}/.match(l[1]) }.all?{|row| test_complete(row)}
   sleep(1)
 end
 
