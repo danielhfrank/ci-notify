@@ -11,7 +11,8 @@ project_name = `basename $(git rev-parse --show-toplevel)`
 test_name_regex = ARGV[0] || ".*"
 
 def test_complete(parsed_line)
-  [GITHUB_SUCCESS, GITHUB_FALURE].include?(parsed_line[0])
+  ([GITHUB_SUCCESS, GITHUB_FALURE].include?(parsed_line[0]) ||
+  parsed_line[0].length == 0) # if no status, means job is skipped, so we should not wait on it
 end
 
 status_rows = []
